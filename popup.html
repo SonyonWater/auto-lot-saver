@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auto Lot Saver</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <main>
+    <div class="eyebrow">AUTO LOT SAVER</div>
+    <h1>Сохранить информацию<br>об авто как…</h1>
+    <p class="hint">Откройте страницу конкретного лота и выберите папку для сохранения.</p>
+    <label class="row"><span>Папка назначения</span><button id="choose" class="secondary">Выбрать</button></label>
+    <div id="folder" class="folder">Папка не выбрана</div>
+    <button id="save" class="primary" disabled>Сохранить лот</button>
+    <div id="status" role="status"></div>
+    <div class="note">Фото будут пронумерованы: 1.jpg, 2.jpg, 3.jpg…</div>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
