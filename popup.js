@@ -82,7 +82,10 @@ async function writePhoto(dir, url, number) {
   const response = await fetch(url, { credentials: 'include' });
   if (!response.ok) throw new Error(response.status);
   const blob = await response.blob();
-  if (blob.size < 10 * 1024 || !blob.type.startsWith('image/')) throw new Error('Response is not a vehicle image');
+  const isBcaVehicleImage = /bcaimage\.com\/Document\?DocType=VehicleImage/i.test(url);
+  if (!blob.size || (!isBcaVehicleImage && (blob.size < 10 * 1024 || !blob.type.startsWith('image/')))) {
+    throw new Error('Response is not a vehicle image');
+  }
   const extension = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' })[blob.type] || 'jpg';
   const file = await dir.getFileHandle(`${number}.${extension}`, { create: true });
   const writer = await file.createWritable();

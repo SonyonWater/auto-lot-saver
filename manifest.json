@@ -14,6 +14,9 @@
     "https://www.bca.com/*",
     "https://*.bca.com/*",
     "https://*.bca-online-auctions.eu/*",
+    "https://www.bcaimage.com/*",
+    "https://bcaimage.com/*",
+    "https://bcamediaprod.blob.core.windows.net/*",
     "https://*.autoselect.cloud/*",
     "https://arvalprodeuwsa.blob.core.windows.net/*"
   ],
