@@ -24,23 +24,42 @@
     "https://arvalprodeuwsa.blob.core.windows.net/*",
     "https://starvalprodeuw.blob.core.windows.net/*"
   ],
-  "action": { "default_popup": "popup.html", "default_title": "Auto Lot Saver" },
-  "content_scripts": [{
-    "matches": [
-      "https://aukcje.efl.com.pl/*", "https://www.otomoto.pl/*", "https://www.auto1.com/*",
-      "https://carmarket.ayvens.com/*", "https://remktg.arval.com/*", "https://autoselect.arval.pl/*",
-      "https://www.bca.com/*"
-    ],
-    "js": [
-      "parsers/remktg.js",
-      "parsers/efl.js",
-      "parsers/otomoto.js",
-      "parsers/auto1.js",
-      "parsers/ayvens.js",
-      "parsers/arval-autoselect.js",
-      "parsers/bca.js",
-      "content.js"
-    ],
-    "run_at": "document_idle"
-  }]
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Auto Lot Saver",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://aukcje.efl.com.pl/*",
+        "https://www.otomoto.pl/*",
+        "https://www.auto1.com/*",
+        "https://carmarket.ayvens.com/*",
+        "https://remktg.arval.com/*",
+        "https://autoselect.arval.pl/*",
+        "https://www.bca.com/*"
+      ],
+      "js": [
+        "parsers/remktg.js",
+        "parsers/efl.js",
+        "parsers/otomoto.js",
+        "parsers/auto1.js",
+        "parsers/ayvens.js",
+        "parsers/arval-autoselect.js",
+        "parsers/bca.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
 }
