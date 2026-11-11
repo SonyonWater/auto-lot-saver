@@ -17,7 +17,7 @@
       title: [brand, model, type].filter(Boolean).join(' ') || clean(document.title),
       fields: {
         brand,
-        model,
+        model: [model, type].filter(Boolean).join(' '),
         year: value(details, ['rok modelowy', 'rok produkcji', 'year']),
         mileage: formatMileage(exactMileage || value(details, ['przebieg', 'stan licznika', 'odometer', 'mileage'])),
         color: value(details, ['kolor', 'color']),
@@ -28,9 +28,9 @@
         fuel: value(details, ['paliwo', 'rodzaj paliwa', 'fuel']),
         registrationDate: value(details, ['data pierwszej rejestracji', 'pierwsza rejestracja', 'first registration date', 'firstregistrationdate']),
         vin: value(details, ['vin', 'numer vin', 'vin number', 'vinnumber']),
-        storageLocation: value(details, ['lokalizacja', 'miejsce przechowywania', 'storage location']),
         seats: value(details, ['liczba miejsc', 'number of seats', 'seats'])
       },
+      omitFields: ['storageLocation'],
       photos: collectPhotos(),
       photoApis: []
     };

@@ -46,6 +46,13 @@ saveButton.addEventListener('click', async () => {
     const folderName = safeName(folderNameFor(result));
     const lotDirectory = await directoryHandle.getDirectoryHandle(folderName, { create: true });
     await writeText(lotDirectory, 'info.txt', makeInfo(result));
+    let extraFilesSaved = 0;
+    for (const file of result.extraFiles || []) {
+      if (file?.name && typeof file.content === 'string') {
+        await writeText(lotDirectory, safeName(file.name), file.content);
+        extraFilesSaved += 1;
+      }
+    }
     const apiPhotos = await resolvePhotoApis(result.photoApis || []);
     const photos = unique([...(result.photos || []), ...apiPhotos]);
     let saved = 0;
@@ -53,7 +60,8 @@ saveButton.addEventListener('click', async () => {
       try { await writePhoto(lotDirectory, photo, saved + 1); saved += 1; }
       catch (error) { console.warn('Photo skipped', photo, error); }
     }
-    setStatus(`Готово: ${folderName}. Сохранено фото: ${saved}.`, false, true);
+    const extras = extraFilesSaved ? ` Доп. файлов: ${extraFilesSaved}.` : '';
+    setStatus(`Готово: ${folderName}. Сохранено фото: ${saved}.${extras}`, false, true);
   } catch (error) {
     setStatus(error.message || 'Не удалось сохранить лот.', true);
   } finally { saveButton.disabled = false; }
@@ -82,7 +90,11 @@ function unique(items) {
     const value = item.replace(/#.*$/, '');
     try {
       const url = new URL(value);
-      const key = `${url.origin}${url.pathname}`;
+      // BCA serves every vehicle image from the same /Document endpoint; its
+      // docId query parameter is the actual image identity.
+      const key = /bcaimage\.com\/Document$/i.test(`${url.origin}${url.pathname}`)
+        ? `${url.origin}${url.pathname}?DocType=${url.searchParams.get('DocType') || ''}&docId=${url.searchParams.get('docId') || ''}`
+        : `${url.origin}${url.pathname}`;
       if (!urls.has(key)) urls.set(key, value);
     } catch { if (!urls.has(value)) urls.set(value, value); }
   }
