@@ -7,6 +7,7 @@
   "host_permissions": [
     "https://aukcje.efl.com.pl/*",
     "https://www.otomoto.pl/*",
+    "https://*.olxcdn.com/*",
     "https://www.auto1.com/*",
     "https://carmarket.ayvens.com/*",
     "https://*.ayvens.com/*",
