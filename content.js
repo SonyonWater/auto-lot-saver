@@ -5,7 +5,11 @@
   window.AutoLotParsers.generic = { extract: extractLot };
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === 'extractLot') sendResponse(currentParser().extract());
+    if (message.type === 'extractLot') {
+      Promise.resolve(currentParser().extract(message))
+        .then(sendResponse)
+        .catch(error => sendResponse({ error: error?.message || 'Не удалось обработать лот.' }));
+    }
     return true;
   });
 

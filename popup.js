@@ -2,7 +2,22 @@ const chooseButton = document.querySelector('#choose');
 const saveButton = document.querySelector('#save');
 const folderLabel = document.querySelector('#folder');
 const status = document.querySelector('#status');
+const lotField = document.querySelector('#lot-field');
+const lotNumber = document.querySelector('#lot-number');
+const photoCountField = document.querySelector('#photo-count-field');
+const photoCount = document.querySelector('#photo-count');
 let directoryHandle;
+
+chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+  try {
+    const isAyvens = new URL(tab?.url || '').hostname === 'carmarket.ayvens.com';
+    lotField.hidden = !isAyvens;
+    photoCountField.hidden = !isAyvens;
+  } catch {
+    lotField.hidden = true;
+    photoCountField.hidden = true;
+  }
+});
 
 chooseButton.addEventListener('click', async () => {
   try {
@@ -20,7 +35,13 @@ saveButton.addEventListener('click', async () => {
   setStatus('Собираю данные лота и фотографии…');
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const result = await chrome.tabs.sendMessage(tab.id, { type: 'extractLot' });
+    const ayvensLotNumber = lotField.hidden ? '' : lotNumber.value.trim();
+    const ayvensPhotoCount = photoCountField.hidden ? '' : photoCount.value.trim();
+    if (!lotField.hidden && (!/^\d+$/.test(ayvensLotNumber) || !/^\d+$/.test(ayvensPhotoCount) || Number(ayvensPhotoCount) < 1)) {
+      throw new Error('Введите номер лота и количество фотографий Ayvens — только положительные числа.');
+    }
+    const result = await chrome.tabs.sendMessage(tab.id, { type: 'extractLot', lotNumber: ayvensLotNumber, photoCount: ayvensPhotoCount });
+    if (result?.error) throw new Error(result.error);
     if (!result?.title) throw new Error('Не удалось определить название лота на этой странице.');
     const folderName = safeName(folderNameFor(result));
     const lotDirectory = await directoryHandle.getDirectoryHandle(folderName, { create: true });
@@ -46,7 +67,8 @@ function makeInfo(data) {
     ['seats', 'Количество мест']
   ];
   const values = { ...(data.fields || {}), ...(data.details || {}) };
-  return labels.map(([key, label]) => `${label}: ${values[key] || 'Не указано'}`).join('\n') + '\n';
+  const omitted = new Set(data.omitFields || []);
+  return labels.filter(([key]) => !omitted.has(key)).map(([key, label]) => `${label}: ${values[key] || 'Не указано'}`).join('\n') + '\n';
 }
 function safeName(value) { return value.replace(/[<>:"/\\|?*\x00-\x1F]/g, ' ').replace(/[. ]+$/g, '').trim().slice(0, 120) || 'Автомобиль'; }
 function folderNameFor(data) {
@@ -54,7 +76,18 @@ function folderNameFor(data) {
   const model = data.fields?.model?.trim();
   return [brand, model].filter(Boolean).join(' ') || data.title;
 }
-function unique(items) { return [...new Set(items.map(item => item.replace(/#.*$/, '')))].filter(Boolean); }
+function unique(items) {
+  const urls = new Map();
+  for (const item of items.filter(Boolean)) {
+    const value = item.replace(/#.*$/, '');
+    try {
+      const url = new URL(value);
+      const key = `${url.origin}${url.pathname}`;
+      if (!urls.has(key)) urls.set(key, value);
+    } catch { if (!urls.has(value)) urls.set(value, value); }
+  }
+  return [...urls.values()];
+}
 async function resolvePhotoApis(endpoints) {
   const urls = new Set();
   for (const endpoint of unique(endpoints)) {

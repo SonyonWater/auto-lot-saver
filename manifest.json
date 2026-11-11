@@ -9,6 +9,7 @@
     "https://www.otomoto.pl/*",
     "https://www.auto1.com/*",
     "https://carmarket.ayvens.com/*",
+    "https://*.ayvens.com/*",
     "https://remktg.arval.com/*",
     "https://autoselect.arval.pl/*",
     "https://www.bca.com/*",
@@ -18,7 +19,8 @@
     "https://bcaimage.com/*",
     "https://bcamediaprod.blob.core.windows.net/*",
     "https://*.autoselect.cloud/*",
-    "https://arvalprodeuwsa.blob.core.windows.net/*"
+    "https://arvalprodeuwsa.blob.core.windows.net/*",
+    "https://starvalprodeuw.blob.core.windows.net/*"
   ],
   "action": { "default_popup": "popup.html", "default_title": "Auto Lot Saver" },
   "content_scripts": [{

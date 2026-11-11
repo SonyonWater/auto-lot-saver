@@ -6,6 +6,14 @@
     <div class="eyebrow">AUTO LOT SAVER</div>
     <h1>Сохранить информацию<br>об авто как…</h1>
     <p class="hint">Откройте страницу конкретного лота и выберите папку для сохранения.</p>
+    <label id="lot-field" class="lot-field" hidden>
+      <span>Номер лота Ayvens</span>
+      <input id="lot-number" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Например: 38">
+    </label>
+    <label id="photo-count-field" class="lot-field" hidden>
+      <span>Количество фотографий Ayvens</span>
+      <input id="photo-count" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Например: 15">
+    </label>
     <label class="row"><span>Папка назначения</span><button id="choose" class="secondary">Выбрать</button></label>
     <div id="folder" class="folder">Папка не выбрана</div>
     <button id="save" class="primary" disabled>Сохранить лот</button>
