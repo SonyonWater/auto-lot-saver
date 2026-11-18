@@ -11,6 +11,7 @@
     "https://www.auto1.com/*",
     "https://*.auto1.com/*",
     "https://carmarket.ayvens.com/*",
+    "https://usedcars.ayvens.com/*",
     "https://*.ayvens.com/*",
     "https://remktg.arval.com/*",
     "https://autoselect.arval.pl/*",
@@ -45,6 +46,7 @@
         "https://www.otomoto.pl/*",
         "https://www.auto1.com/*",
         "https://carmarket.ayvens.com/*",
+        "https://usedcars.ayvens.com/*",
         "https://remktg.arval.com/*",
         "https://autoselect.arval.pl/*",
         "https://www.bca.com/*"
@@ -55,6 +57,7 @@
         "parsers/otomoto.js",
         "parsers/auto1.js",
         "parsers/ayvens.js",
+        "parsers/usedcars-ayvens.js",
         "parsers/arval-autoselect.js",
         "parsers/bca.js",
         "content.js"
