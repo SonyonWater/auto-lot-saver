@@ -7,6 +7,11 @@ const lotNumber = document.querySelector('#lot-number');
 const photoCountField = document.querySelector('#photo-count-field');
 const photoCount = document.querySelector('#photo-count');
 let directoryHandle;
+const contentScriptFiles = [
+  'parsers/remktg.js', 'parsers/efl.js', 'parsers/otomoto.js',
+  'parsers/auto1.js', 'parsers/ayvens.js', 'parsers/usedcars-ayvens.js',
+  'parsers/arval-autoselect.js', 'parsers/bca.js', 'content.js'
+];
 
 chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
   try {
@@ -40,7 +45,7 @@ saveButton.addEventListener('click', async () => {
     if (!lotField.hidden && (!/^\d+$/.test(ayvensLotNumber) || !/^\d+$/.test(ayvensPhotoCount) || Number(ayvensPhotoCount) < 1)) {
       throw new Error('Введите номер лота и количество фотографий Ayvens — только положительные числа.');
     }
-    const result = await chrome.tabs.sendMessage(tab.id, { type: 'extractLot', lotNumber: ayvensLotNumber, photoCount: ayvensPhotoCount });
+    const result = await extractLotFromTab(tab.id, { type: 'extractLot', lotNumber: ayvensLotNumber, photoCount: ayvensPhotoCount });
     if (result?.error) throw new Error(result.error);
     if (!result?.title) throw new Error('Не удалось определить название лота на этой странице.');
     const folderName = safeName(folderNameFor(result));
@@ -66,6 +71,21 @@ saveButton.addEventListener('click', async () => {
     setStatus(error.message || 'Не удалось сохранить лот.', true);
   } finally { saveButton.disabled = false; }
 });
+
+async function extractLotFromTab(tabId, message) {
+  try {
+    return await chrome.tabs.sendMessage(tabId, message);
+  } catch (firstError) {
+    // Some Chrome installations do not attach static content scripts after a
+    // SPA navigation. activeTab lets the user-triggered popup attach them now.
+    try {
+      await chrome.scripting.executeScript({ target: { tabId }, files: contentScriptFiles });
+      return await chrome.tabs.sendMessage(tabId, message);
+    } catch (injectionError) {
+      throw new Error(`Не удалось подключить парсер к этой вкладке: ${injectionError.message || firstError.message}`);
+    }
+  }
+}
 
 function makeInfo(data) {
   const labels = [
