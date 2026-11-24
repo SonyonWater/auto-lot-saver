@@ -6,12 +6,17 @@ const lotField = document.querySelector('#lot-field');
 const lotNumber = document.querySelector('#lot-number');
 const photoCountField = document.querySelector('#photo-count-field');
 const photoCount = document.querySelector('#photo-count');
+const cropPercent = document.querySelector('#crop-percent');
+const cropValue = document.querySelector('#crop-value');
 let directoryHandle;
 const contentScriptFiles = [
   'parsers/remktg.js', 'parsers/efl.js', 'parsers/otomoto.js',
   'parsers/auto1.js', 'parsers/ayvens.js', 'parsers/usedcars-ayvens.js',
   'parsers/arval-autoselect.js', 'parsers/bca.js', 'content.js'
 ];
+
+updateCropValue();
+cropPercent.addEventListener('input', updateCropValue);
 
 chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
   try {
@@ -60,16 +65,22 @@ saveButton.addEventListener('click', async () => {
     }
     const apiPhotos = await resolvePhotoApis(result.photoApis || []);
     const photos = unique([...(result.photos || []), ...apiPhotos]);
+    const bottomCropPercent = Number(cropPercent.value);
     let saved = 0;
     for (const photo of photos) {
-      try { await writePhoto(lotDirectory, photo, saved + 1); saved += 1; }
+      try { await writePhoto(lotDirectory, photo, saved + 1, bottomCropPercent); saved += 1; }
       catch (error) { console.warn('Photo skipped', photo, error); }
     }
     const extras = extraFilesSaved ? ` Доп. файлов: ${extraFilesSaved}.` : '';
-    setStatus(`Готово: ${folderName}. Сохранено фото: ${saved}.${extras}`, false, true);
+    const cropNote = bottomCropPercent ? ` Обрезка снизу: ${bottomCropPercent}%.` : '';
+    setStatus(`Готово: ${folderName}. Сохранено фото: ${saved}.${cropNote}${extras}`, false, true);
   } catch (error) {
     setStatus(error.message || 'Не удалось сохранить лот.', true);
-  } finally { saveButton.disabled = false; }
+  } finally {
+    saveButton.disabled = false;
+    cropPercent.value = '0';
+    updateCropValue();
+  }
 });
 
 async function extractLotFromTab(tabId, message) {
@@ -143,7 +154,7 @@ function findImageUrls(value, baseUrl, urls) {
   else if (value && typeof value === 'object') Object.values(value).forEach(item => findImageUrls(item, baseUrl, urls));
 }
 async function writeText(dir, name, text) { const file = await dir.getFileHandle(name, { create: true }); const writer = await file.createWritable(); await writer.write(text); await writer.close(); }
-async function writePhoto(dir, url, number) {
+async function writePhoto(dir, url, number, bottomCropPercent = 0) {
   const response = await fetch(url, { credentials: 'include' });
   if (!response.ok) throw new Error(response.status);
   const blob = await response.blob();
@@ -151,10 +162,23 @@ async function writePhoto(dir, url, number) {
   if (!blob.size || (!isBcaVehicleImage && (blob.size < 10 * 1024 || !blob.type.startsWith('image/')))) {
     throw new Error('Response is not a vehicle image');
   }
-  const extension = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' })[blob.type] || 'jpg';
+  const outputBlob = bottomCropPercent ? await cropBottom(blob, bottomCropPercent) : blob;
+  const extension = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' })[outputBlob.type] || 'jpg';
   const file = await dir.getFileHandle(`${number}.${extension}`, { create: true });
   const writer = await file.createWritable();
-  await writer.write(blob);
+  await writer.write(outputBlob);
   await writer.close();
 }
+async function cropBottom(blob, percent) {
+  const image = await createImageBitmap(blob);
+  try {
+    const height = Math.max(1, Math.round(image.height * (1 - percent / 100)));
+    const canvas = new OffscreenCanvas(image.width, height);
+    canvas.getContext('2d').drawImage(image, 0, 0);
+    return await canvas.convertToBlob({ type: blob.type || 'image/jpeg', quality: 0.96 });
+  } finally {
+    image.close();
+  }
+}
+function updateCropValue() { cropValue.value = `${cropPercent.value}%`; cropValue.textContent = `${cropPercent.value}%`; }
 function setStatus(message, error = false, success = false) { status.textContent = message; status.className = error ? 'error' : success ? 'success' : ''; }

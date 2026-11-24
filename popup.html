@@ -14,6 +14,12 @@
       <span>Количество фотографий Ayvens</span>
       <input id="photo-count" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="Например: 15">
     </label>
+    <label class="crop-field" for="crop-percent">
+      <span>Обрезать снизу</span>
+      <output id="crop-value" for="crop-percent">0%</output>
+      <input id="crop-percent" type="range" min="0" max="10" step="1" value="0">
+      <small>Применяется ко всем сохраняемым фотографиям.</small>
+    </label>
     <label class="row"><span>Папка назначения</span><button id="choose" class="secondary">Выбрать</button></label>
     <div id="folder" class="folder">Папка не выбрана</div>
     <button id="save" class="primary" disabled>Сохранить лот</button>
